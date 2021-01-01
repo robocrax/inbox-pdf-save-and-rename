@@ -22,6 +22,7 @@
 
 
 // Query (similar within GMail search) to search for these emails throughout the entirety of GMail
+// Recommend limiting query to inbox so it doesn't start checking everything and only unread emails as well so it doesn't re-download same PDFs
 const query = ' in:inbox is:unread from:(organization.co.nz OR someone@yahoo.co.nz) subject:(purchase order) filename:pdf '
 
 // ID of the folder in google drive in which files are
