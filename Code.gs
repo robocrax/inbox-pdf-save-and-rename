@@ -125,7 +125,7 @@ function getNameFromContent(file) {
     // temp replace rebel contact because numbers regex is not working
     if (find === "contact") {
       found = found.split(" ")[0];
-      regex_found["contact"] = found;  // This is not working but also shows no errors
+      regex_found["contact"] = found;
     }
 
     new_name += found;
