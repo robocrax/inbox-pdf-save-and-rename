@@ -122,12 +122,6 @@ function getNameFromContent(file) {
     let found = extractUsingRegex(content, regex_finds[find]);
     regex_found[find] = found;
 
-    // temp replace rebel contact because numbers regex is not working
-    if (find === "contact") {
-      found = found.split(" ")[0];
-      regex_found["contact"] = found;
-    }
-
     new_name += found;
   }
 
