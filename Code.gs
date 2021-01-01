@@ -63,7 +63,7 @@ const matchName = "Purchase Order.pdf";
 * Made and adjusted earlier so no description.
 *
 */
-function GmailToDrive() {
+function GmailToDriveAndRename() {
   //build query to search emails
   var threads = GmailApp.search(query);
   //var label = getGmailLabel_(labelName);
@@ -84,7 +84,7 @@ function GmailToDrive() {
         let fileID = gdriveFolder.createFile(attachmentBlob).getId();
         let file = DriveApp.getFileById(fileID)
 
-        // Rename file if it matches this name:
+        // Rename file only if it matches this name: matchName
         if (file.getName() == matchName) {
           new_name = getNameFromContent(file);
           Logger.log("Saved " + file.setName(new_name + '.pdf'));   // since output of setName is exactly the new setName, 1-liner baby
