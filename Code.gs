@@ -1,18 +1,14 @@
 /*
  *) Note:
- * Depreciated this in favour of SHARP auto-email forwarding then printing
- * Kinda efficient and cheaper then script runtime limitations
- * 
- *) Note 2:
- * Back in action. Attempting to create open source PDF file renamer from content inside
+ * Google execution notice and/or warning depending on how many emails you receive at once
+ * It takes 3 times longer than downloading just to get a new name from content.
  *
- *) Note 3:
- * fkn ditch Python the app and use Google Scripts. Thanks Google!
- * Google execution notice/warning: It takes 3 times longer than downloading just to get a new name from content
+ * Assuming it takes 1 sec to download an attachment to GDrive, then...
  * 
- *              1x             +       3x         =          4x
+ *              1s             +       3s         =          4s
  *     download attachment           rename              new runtime
  *
+ * OCR is really heavy so you might reach you execution limit if you have many emails.
  */
 
 
