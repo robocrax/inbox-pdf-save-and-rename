@@ -3,6 +3,6 @@ Using Google Script (free) for any incoming mails with matching params and PDF a
 
 [Current plan](https://gitmind.com/app/doc/9071395305)
 
-Accepting all suggestions, use Issues to suggest
-
 > Initial plan was using Python to create a GUI app but I would rather use Google's servers
+
+Accepting all suggestions, use Issues to suggest
