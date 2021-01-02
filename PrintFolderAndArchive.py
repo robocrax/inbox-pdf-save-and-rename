@@ -1,3 +1,16 @@
+"""
+In this version I'm using:
+{
+    "last_exec": 1609623191.449078, 
+    "ran": true, 
+    "queue": ["file(1).pdf", "file(2).pdf"]
+}
+
+
+but dont need "ran" and can use if "queue" empty to get same/better results
+
+"""
+
 import os
 import time
 #import shutil      # File copy and move stuff
