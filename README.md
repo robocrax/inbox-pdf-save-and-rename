@@ -5,5 +5,4 @@ Email is marked as read after script downloads the email to notify user/you. Can
 
 ## For printing
 
-Additionally to automatically print the attachments, I'm using benjamin-kromer's printHotfolder python script:
-https://github.com/benjamin-kromer/printHotfolder/blob/master/printHotfolder.py
+Additionally to automatically print the attachments, I'm using [benjamin-kromer](https://github.com/benjamin-kromer)'s [printHotfolder](https://github.com/benjamin-kromer/printHotfolder) python script: https://github.com/benjamin-kromer/printHotfolder/blob/master/printHotfolder.py
