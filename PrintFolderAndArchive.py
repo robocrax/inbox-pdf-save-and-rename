@@ -1,19 +1,6 @@
-"""
-In this version I'm using:
-{
-    "last_exec": 1609623191.449078, 
-    "ran": true, 
-    "queue": ["file(1).pdf", "file(2).pdf"]
-}
-
-
-but dont need "ran" and can use if "queue" empty to get same/better results
-
-"""
-
 import os
 import time
-#import shutil      # File copy and move stuff
+#import shutil      # File copy and move stuff.. not yet ready
 import json
 from datetime import datetime
 
@@ -61,13 +48,12 @@ Right now this ignores any extra files which were in the queue that no longer ex
 
 """
 def scheduleAhead(x):
-    json_data = {"last_exec": 0, "ran": 0, "queue": []}
+    json_data = {"last_detect": 0, "queue": []}
     try:
         with open(schedule_file, "r") as jsn:
             json_data = json.load(jsn)
-        json_data["last_exec"] = time.time()
+        json_data["last_detect"] = time.time()
         json_data["queue"] = x
-        json_data["ran"] = False
     except IOError:
         print("No schedule file found, creating one...")
     except:
@@ -87,8 +73,8 @@ def checkScheduleCanRun():
     try:
         with open(schedule_file, "r") as jsn:
             json_data = json.load(jsn)
-        if not json_data["ran"]:   # 1-liners are boring so traditional if else
-            return ( time.time() - json_data["last_exec"] ) > delay   # okay maybe not that boring
+        if len(json_data["queue"])>0:    # 1-liners are boring so traditional if else
+            return ( time.time() - json_data["last_detect"] ) > delay   # okay maybe not that boring
         else:
             return False
     except:
