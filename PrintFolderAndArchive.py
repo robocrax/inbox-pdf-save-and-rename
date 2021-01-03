@@ -7,11 +7,12 @@ from datetime import datetime
 
 #all_printers = win32print.EnumPrinters(2)
 
-pdf_dir = "C:\\Users\\Tom\\Desktop\\drive-download-20201231T010209Z-001"
+pdf_dir = "C:\\Users\\Tom\\Desktop\\"
 archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
-problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"
-schedule_file = "C:\\hotfolder_schedule.json"
+# problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
+queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
 delay = 2*60   # in seconds * 60 (minutes...duh)
+force_printer = False
 
 def fileList(x):
     files = []
@@ -24,7 +25,8 @@ def fileList(x):
 def checkForNewFiles(x):
     queue = readQueue()     # Have to rasterize these as variables or else they calculated x ( x = no. of files ) times
     newList = fileList(x)    # in the function below (Exponentially for no reason)
-    return not all(item in queue for item in newList)    # https://www.techbeamers.com/program-python-list-contains-elements/#all-method
+    #return not all(item in queue for item in newList)    # https://www.techbeamers.com/program-python-list-contains-elements/#all-method
+    return not (queue == newList)
 
 def getLogTime():
     now = datetime.now()
@@ -51,7 +53,7 @@ Right now this ignores any extra files which were in the queue that no longer ex
 def scheduleAhead(x):
     json_data = {"last_detect": 0, "queue": []}
     try:
-        with open(schedule_file, "r") as jsn:
+        with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
         json_data["last_detect"] = time.time()
         json_data["queue"] = x
@@ -59,7 +61,7 @@ def scheduleAhead(x):
         print("Generating schedule file...")
     except:
         raise SystemExit('Something is wrong with the schedule ahead JSON file, possibly the format. Script cannot run. \nHINT: You can delete the queue file and start a fresh.')
-    with open(schedule_file, 'w') as jsn:
+    with open(queue_file, 'w') as jsn:
         json.dump(json_data, jsn)
 
 def jsonFileFix():
@@ -70,7 +72,7 @@ def jsonFileFix():
     else:
         if sys.argv[1] == "reset":
             try:
-                os.remove(schedule_file)
+                os.remove(queue_file)
                 raise SystemExit('Schedule reset!')
             except FileNotFoundError:   # This can never be caught unless function called directly 
                 raise SystemExit('No schedule file detected. No reset required.')
@@ -82,7 +84,7 @@ def jsonFileFix():
 
 def readQueue():
     try:
-        with open(schedule_file, "r") as jsn:
+        with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
         return json_data["queue"]
     except IOError:
@@ -94,7 +96,7 @@ def readQueue():
 
 def checkScheduleCanRun():
     try:
-        with open(schedule_file, "r") as jsn:
+        with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
         if len(json_data["queue"])>0:    # 1-liners are boring so traditional if else
             return ( time.time() - json_data["last_detect"] ) > delay   # okay maybe not that boring
@@ -103,25 +105,36 @@ def checkScheduleCanRun():
     except:
         print(jsonFileFix())
 
-def startPrinting():
-    print("start printing.. not ready yet")
+def dropFromQueue(x):
+    try:
+        with open(queue_file, "r") as jsn:
+            json_data = json.load(jsn)
+        json_data["queue"].remove(x)
+        with open(queue_file, 'w') as jsn:
+            json.dump(json_data, jsn)
+    except:
+        print(jsonFileFix())
+
+def startPrinting(x):
+    for file in x:
+        print('Printing '+file+'...')
+        dropFromQueue(file)
 
 def main():
     if checkForNewFiles(pdf_dir):
         scheduleAhead(fileList(pdf_dir))
     if checkScheduleCanRun():
-        startPrinting()
+        startPrinting(readQueue())
 
 if __name__ == "__main__":
     main()
     print('Watching '+pdf_dir)
     while True:
         try:
-            time.sleep(10)
+            time.sleep(1)
             main()
         except KeyboardInterrupt:
             exit('\nNo longer watching... Adios!')
-
 
 # while False:
 #     time.sleep(10) # 10 sec intervals... not needed but 
