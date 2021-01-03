@@ -13,7 +13,7 @@ archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
 # problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
 queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
 delay = 2*60   # in seconds * 60 (minutes...duh)
-force_printer = "Fdax"
+force_printer = "Microsoft Print to PDF"
 
 def fileList(x):
     files = []
@@ -121,6 +121,14 @@ def viewAllPrinters():
             print("    " + printer[2])
     exit()
 
+def setPrinter(x):
+    default_printer = win32print.GetDefaultPrinter()
+    if x == default_printer:
+        exit('That is already your default printer')
+    else:
+        win32print.SetDefaultPrinter(x)
+        exit()
+
 def startPrinting(x):
     if force_printer:
         try:
@@ -140,7 +148,20 @@ def main():
         startPrinting(queue())
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.argv[1]
+    except IndexError:   # Not sure if I should also catch NameError
+        pass
+    else:
+        if sys.argv[1] == "view_printers":
+            viewAllPrinters()
+        elif sys.argv[1] == "set_printer":
+            print('NOTE: This will change your default printer to '+sys.argv[2]+', not just for this script.')
+            setPrinter(sys.argv[2])
+        elif sys.argv[1] == "reset":
+            print('NOTE: This is an optional command and only resets if needed or else program will continue normally.')
+        else:
+            print('Unrecognized argument. Running default.')
     print('Watching '+pdf_dir)
     while True:
         try:
