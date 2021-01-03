@@ -18,4 +18,4 @@ Since PDFs are received in random order, and synced using Google Backup and Sync
   
 ## Compile using Pyinstaller
 
-`pyinstaller PrintFolderAndArchive.py -i printer.ico --onefile --hiddenimport pywintypes
+> pyinstaller PrintFolderAndArchive.py -i printer.ico --onefile --hiddenimport pywintypes
