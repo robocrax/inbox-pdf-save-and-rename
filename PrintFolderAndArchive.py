@@ -13,7 +13,7 @@ archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
 # problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
 queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
 delay = 2*60   # in seconds * 60 (minutes...duh)
-force_printer = "Microsoft Print to PDF"
+# force_printer = "Microsoft Print to PDF"
 
 def fileList(x):
     files = []
@@ -122,21 +122,49 @@ def viewAllPrinters():
     exit()
 
 def setPrinter(x):
-    default_printer = win32print.GetDefaultPrinter()
-    if x == default_printer:
-        exit('That is already your default printer')
+    try:
+        with open(queue_file, "r") as jsn:
+            json_data = json.load(jsn)
+    except IOError:
+        main()
+        setPrinter(x)
+        exit() # Dont loop
+    except:
+        jsonFileFix()
+    if x == "auto":
+        json_data["force_printer"] = False
+        print('Default printer controlled by Windows.')
     else:
-        win32print.SetDefaultPrinter(x)
-        exit()
+        json_data["force_printer"] = x
+        default_printer = win32print.GetDefaultPrinter()
+        if x == default_printer:
+            print('That is already your default printer')
+        else:
+            win32print.SetDefaultPrinter(x)
+            print('Default printer changed to "'+sys.argv[2]+'" globally and for this script as well.')
+    with open(queue_file, 'w') as jsn:
+        json.dump(json_data, jsn)
+    exit()
+
+def chosenPrinter():
+    try:
+        with open(queue_file, "r") as jsn:
+            json_data = json.load(jsn)
+    except IOError:
+        scheduleAhead([])
+    except:
+        jsonFileFix()
+    return json_data["force_printer"]
 
 def startPrinting(x):
+    force_printer = chosenPrinter()
     if force_printer:
         try:
             if win32print.GetDefaultPrinter() != force_printer:
                 win32print.SetDefaultPrinter(force_printer)
         except:
             print('Cannot set your printer "'+force_printer+'" as default. Please see list below and choose one.\n')
-            viewAllPrinters()
+            viewAllPrinters()   # exits after showing options
     for file in x:
         print('Processed '+file)
         dropFromQueue(file)
@@ -153,15 +181,16 @@ if __name__ == "__main__":
     except IndexError:   # Not sure if I should also catch NameError
         pass
     else:
-        if sys.argv[1] == "view_printers":
+        if sys.argv[1] == "list_printers":
             viewAllPrinters()
         elif sys.argv[1] == "set_printer":
-            print('NOTE: This will change your default printer to '+sys.argv[2]+', not just for this script.')
             setPrinter(sys.argv[2])
+        elif sys.argv[1] == "help" or sys.argv[1] == "?":
+            exit('Available options: help, reset, list_printers, set_printer "Microsoft Print to PDF"')
         elif sys.argv[1] == "reset":
-            print('NOTE: This is an optional command and only resets if needed or else program will continue normally.')
+            print('This is an optional command and only resets if needed or else program will continue normally.')
         else:
-            print('Unrecognized argument. Running default.')
+            print('Unrecognized argument, use ? to view available commands. Running default...')
     print('Watching '+pdf_dir)
     while True:
         try:
