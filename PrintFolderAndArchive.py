@@ -1,15 +1,13 @@
 import os
 import time
 import sys
-#import shutil      # File copy and move stuff.. not yet ready
 import json
 import win32print
 import win32api
 from datetime import datetime
 
-pdf_dir = "C:\\Users\\Tom\\Desktop\\"
-archive_dir = "C:\\Users\\Tom\\Desktop\\Dones\\"
-# problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
+pdf_dir = "C:\\Users\\Tom\\Desktop\\Watching\\"
+archive_dir = "C:\\Users\\Tom\\Desktop\\Donezos\\"
 queue_file = "C:\\hotfolder_queue.json"
 delay = 2*60   # in seconds * 60 (minutes...duh)
 # force_printer = "Microsoft Print to PDF"
@@ -196,7 +194,7 @@ if __name__ == "__main__":
     print('Watching '+pdf_dir)
     while True:
         try:
-            time.sleep(1)
+            time.sleep(10)
             main()
         except KeyboardInterrupt:
             exit('\nNo longer watching... Adios!')
