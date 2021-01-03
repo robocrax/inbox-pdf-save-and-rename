@@ -13,7 +13,7 @@ archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
 # problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
 queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
 delay = 2*60   # in seconds * 60 (minutes...duh)
-force_printer = "Upstairs"
+force_printer = "Fdax"
 
 def fileList(x):
     files = []
@@ -49,7 +49,7 @@ Right now this ignores any extra files which were in the queue that no longer ex
 
 """
 def scheduleAhead(x):
-    json_data = {"last_detect": 0, "queue": []}
+    json_data = {"last_detect": 0, "force_printer": False, "queue": []}
     try:
         with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
@@ -116,9 +116,9 @@ def viewAllPrinters():
     default_printer = win32print.GetDefaultPrinter()
     for printer in printers:
         if printer[2] == default_printer:
-            print(printer[2] + " <== Default")
+            print("==> " + printer[2] + " <== Default")
         else:
-            print(printer[2])
+            print("    " + printer[2])
     exit()
 
 def startPrinting(x):
@@ -127,7 +127,7 @@ def startPrinting(x):
             if win32print.GetDefaultPrinter() != force_printer:
                 win32print.SetDefaultPrinter(force_printer)
         except:
-            print('\nCannot set your printer as default. Please see list below and choose one.')
+            print('Cannot set your printer "'+force_printer+'" as default. Please see list below and choose one.\n')
             viewAllPrinters()
     for file in x:
         print('Processed '+file)
@@ -140,15 +140,7 @@ def main():
         startPrinting(queue())
 
 if __name__ == "__main__":
-    try:
-        sys.argv[1]
-    except IndexError:   # Not sure if I should also catch NameError
-        pass
-    else:
-        if sys.argv[1] == "view_printers":
-            viewAllPrinters()
-        elif sys.argv[1] == "reset":
-            print('NOTE: This is an optional command and only resets if needed or else program will continue normally.')
+    main()
     print('Watching '+pdf_dir)
     while True:
         try:
