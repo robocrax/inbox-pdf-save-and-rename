@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 #import shutil      # File copy and move stuff.. not yet ready
 import json
 from datetime import datetime
@@ -12,17 +13,17 @@ problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"
 schedule_file = "C:\\hotfolder_schedule.json"
 delay = 2*60   # in seconds * 60 (minutes...duh)
 
-def fileList():
+def fileList(x):
     files = []
-    filesInFolder = sorted(os.listdir(pdf_dir))
+    filesInFolder = sorted(os.listdir(x))
     for f in filesInFolder:
         if f[-4:] == ".pdf":
             files.append(f)
     return files
 
-def checkForNewFiles():
+def checkForNewFiles(x):
     queue = readQueue()     # Have to rasterize these as variables or else they calculated x ( x = no. of files ) times
-    newList = fileList()    # in the function below (Exponentially for no reason)
+    newList = fileList(x)    # in the function below (Exponentially for no reason)
     return not all(item in queue for item in newList)    # https://www.techbeamers.com/program-python-list-contains-elements/#all-method
 
 def getLogTime():
@@ -31,7 +32,7 @@ def getLogTime():
     return t
 
 def moveFile(f):
-    while f in os.listdir(pdf_dir):
+    while f in os.listdir(x):
         try:              
             time.sleep(3)
             print(getLogTime() + " REMOVING "+f+" FROM INPUT FOLDER!")
@@ -44,7 +45,7 @@ def moveFile(f):
 """
 scheduleAhead accepts x which is an array of files in the folder that will now be the queue.
 
-Right now this ignores any extra files which were in the queue that no longer exist in the folder and justs queues up what's there currently without informing or logging
+Right now this ignores any extra files which were in the queue that no longer exist in the folder and just overrides queue with what's there currently, also without informing or logging
 
 """
 def scheduleAhead(x):
@@ -55,19 +56,41 @@ def scheduleAhead(x):
         json_data["last_detect"] = time.time()
         json_data["queue"] = x
     except IOError:
-        print("No schedule file found, creating one...")
+        print("Generating schedule file...")
     except:
         raise SystemExit('Something is wrong with the schedule ahead JSON file, possibly the format. Script cannot run. \nHINT: You can delete the queue file and start a fresh.')
     with open(schedule_file, 'w') as jsn:
         json.dump(json_data, jsn)
+
+def jsonFileFix():
+    try:
+        sys.argv[1]
+    except IndexError:   # Not sure if I should also catch NameError
+        pass
+    else:
+        if sys.argv[1] == "reset":
+            try:
+                os.remove(schedule_file)
+                raise SystemExit('Schedule reset!')
+            except FileNotFoundError:   # This can never be caught unless function called directly 
+                raise SystemExit('No schedule file detected. No reset required.')
+            #return True
+        else:
+            pass
+    raise SystemExit('Damaged schedule JSON file, possibly the format. Script cannot run. \nHINT: You can run the following to start a fresh.\n\n          `'+sys.argv[0]+' reset`')
+    return False
 
 def readQueue():
     try:
         with open(schedule_file, "r") as jsn:
             json_data = json.load(jsn)
         return json_data["queue"]
+    except IOError:
+        scheduleAhead([])
+        return []
     except:
-        raise SystemExit('Something is wrong with the schedule ahead JSON file, possibly the format. Script cannot run. \nHINT: You can delete the queue file and start a fresh.')
+        print(jsonFileFix())
+        return []
 
 def checkScheduleCanRun():
     try:
@@ -78,20 +101,26 @@ def checkScheduleCanRun():
         else:
             return False
     except:
-        raise SystemExit('Something is wrong with the schedule ahead JSON file, possibly the format. Script cannot run. \nHINT: You can delete the queue file and start a fresh.')
+        print(jsonFileFix())
 
 def startPrinting():
-    print("thullu mera")
+    print("start printing.. not ready yet")
 
 def main():
-    if checkForNewFiles():
-        scheduleAhead(fileList())
+    if checkForNewFiles(pdf_dir):
+        scheduleAhead(fileList(pdf_dir))
     if checkScheduleCanRun():
         startPrinting()
 
-main()
-a=checkScheduleCanRun()
-print(a)
+if __name__ == "__main__":
+    main()
+    print('Watching '+pdf_dir)
+    while True:
+        try:
+            time.sleep(10)
+            main()
+        except KeyboardInterrupt:
+            exit('\nNo longer watching... Adios!')
 
 
 # while False:
