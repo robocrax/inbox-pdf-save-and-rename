@@ -3,6 +3,7 @@ import time
 import sys
 #import shutil      # File copy and move stuff.. not yet ready
 import json
+import win32print
 from datetime import datetime
 
 #all_printers = win32print.EnumPrinters(2)
@@ -12,7 +13,7 @@ archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
 # problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
 queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
 delay = 2*60   # in seconds * 60 (minutes...duh)
-force_printer = False
+force_printer = "Upstairs"
 
 def fileList(x):
     files = []
@@ -23,10 +24,7 @@ def fileList(x):
     return files
 
 def checkForNewFiles(x):
-    queue = readQueue()     # Have to rasterize these as variables or else they calculated x ( x = no. of files ) times
-    newList = fileList(x)    # in the function below (Exponentially for no reason)
-    #return not all(item in queue for item in newList)    # https://www.techbeamers.com/program-python-list-contains-elements/#all-method
-    return not (queue == newList)
+    return not (queue() == fileList(x))
 
 def getLogTime():
     now = datetime.now()
@@ -80,9 +78,8 @@ def jsonFileFix():
         else:
             pass
     raise SystemExit('Damaged schedule JSON file, possibly the format. Script cannot run. \nHINT: You can run the following to start a fresh.\n\n          `'+sys.argv[0]+' reset`')
-    return False
 
-def readQueue():
+def queue():
     try:
         with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
@@ -92,9 +89,8 @@ def readQueue():
         return []
     except:
         print(jsonFileFix())
-        return []
 
-def checkScheduleCanRun():
+def canRunSchedule():
     try:
         with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
@@ -115,19 +111,44 @@ def dropFromQueue(x):
     except:
         print(jsonFileFix())
 
+def viewAllPrinters():
+    printers = win32print.EnumPrinters(2)
+    default_printer = win32print.GetDefaultPrinter()
+    for printer in printers:
+        if printer[2] == default_printer:
+            print(printer[2] + " <== Default")
+        else:
+            print(printer[2])
+    exit()
+
 def startPrinting(x):
+    if force_printer:
+        try:
+            if win32print.GetDefaultPrinter() != force_printer:
+                win32print.SetDefaultPrinter(force_printer)
+        except:
+            print('\nCannot set your printer as default. Please see list below and choose one.')
+            viewAllPrinters()
     for file in x:
-        print('Printing '+file+'...')
+        print('Processed '+file)
         dropFromQueue(file)
 
 def main():
     if checkForNewFiles(pdf_dir):
         scheduleAhead(fileList(pdf_dir))
-    if checkScheduleCanRun():
-        startPrinting(readQueue())
+    if canRunSchedule():
+        startPrinting(queue())
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.argv[1]
+    except IndexError:   # Not sure if I should also catch NameError
+        pass
+    else:
+        if sys.argv[1] == "view_printers":
+            viewAllPrinters()
+        elif sys.argv[1] == "reset":
+            print('NOTE: This is an optional command and only resets if needed or else program will continue normally.')
     print('Watching '+pdf_dir)
     while True:
         try:
