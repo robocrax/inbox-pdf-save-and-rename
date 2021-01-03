@@ -4,14 +4,13 @@ import sys
 #import shutil      # File copy and move stuff.. not yet ready
 import json
 import win32print
+import win32api
 from datetime import datetime
 
-#all_printers = win32print.EnumPrinters(2)
-
 pdf_dir = "C:\\Users\\Tom\\Desktop\\"
-archive_dir = "C:\\HOTFOLDER_DRUCK\\ARCHIV\\"
+archive_dir = "C:\\Users\\Tom\\Desktop\\Dones\\"
 # problem = "C:\\HOTFOLDER_DRUCK\\PROBLEMJOBS\\"       # Not implemented yet
-queue_file = "C:\\hotfolder_queue.json"    # Just a temp file
+queue_file = "C:\\hotfolder_queue.json"
 delay = 2*60   # in seconds * 60 (minutes...duh)
 # force_printer = "Microsoft Print to PDF"
 
@@ -28,18 +27,14 @@ def checkForNewFiles(x):
 
 def getLogTime():
     now = datetime.now()
-    t = now.strftime("%Y-%m-%d_%H%M")
+    t = now.strftime("%Y-%m-%d_%H%M%S")
     return t
 
-def moveFile(f):
-    while f in os.listdir(x):
-        try:              
-            time.sleep(3)
-            print(getLogTime() + " REMOVING "+f+" FROM INPUT FOLDER!")
-            os.remove(os.path.join(pdf_dir,f))
-        except Exception as e:
-            print(e)
-            time.sleep(5)
+def moveFile(source, dest):
+    try:
+        os.rename(source, dest)
+    except Exception as e:
+        print(e)
     return None
 
 """
@@ -49,7 +44,7 @@ Right now this ignores any extra files which were in the queue that no longer ex
 
 """
 def scheduleAhead(x):
-    json_data = {"last_detect": 0, "force_printer": False, "queue": []}
+    json_data = {"last_detect": 0, "force_printer": False, "queue": [], "watch_dir": False, "archive_dir": False}
     try:
         with open(queue_file, "r") as jsn:
             json_data = json.load(jsn)
@@ -166,7 +161,12 @@ def startPrinting(x):
             print('Cannot set your printer "'+force_printer+'" as default. Please see list below and choose one.\n')
             viewAllPrinters()   # exits after showing options
     for file in x:
-        print('Processed '+file)
+        # Archive first so that file is not in use when archiving (just in case printer is still spooling)
+        archive_file = os.path.join(archive_dir,getLogTime()+"_"+file)
+        moveFile(os.path.join(pdf_dir,file),archive_file)
+        # Send print using Windows default action
+        win32api.ShellExecute(0,"print", archive_file, None,  ".",  0)
+        print('Processed '+archive_file)
         dropFromQueue(file)
 
 def main():
@@ -185,6 +185,8 @@ if __name__ == "__main__":
             viewAllPrinters()
         elif sys.argv[1] == "set_printer":
             setPrinter(sys.argv[2])
+        if sys.argv[1] == "pick_folders":
+            exit('You found hidden arg. Go home now, this is not ready')
         elif sys.argv[1] == "help" or sys.argv[1] == "?":
             exit('Available options: help, reset, list_printers, set_printer "Microsoft Print to PDF"')
         elif sys.argv[1] == "reset":
@@ -198,29 +200,3 @@ if __name__ == "__main__":
             main()
         except KeyboardInterrupt:
             exit('\nNo longer watching... Adios!')
-
-# while False:
-#     time.sleep(10) # 10 sec intervals... not needed but 
-#     files = checkForNewFiles()
-#     time.time()
-#     if len(files) > 0:
-#         time.sleep(6) # WARTEN BIS SWITCH DEN PREFIX ENTFERNT HAT 
-#         files = checkForNewFiles() # ANSCHLIESSEND ORDNER NEU EINLESEN
-#         for f in files:
-#             pattern = re.compile('\_([a-zA-Z0-9\s\-]+)\.pdf')
-#             match = pattern.search(f)
-#             try:
-#                 printer = match.group(1)
-#                 defaultPrinter = win32print.GetDefaultPrinter()
-#                 if defaultPrinter != printer:
-#                     win32print.SetDefaultPrinter(printer)
-#                 print getActualTime()+" PRINTING FILE "+ f +" on "+printer
-#                 win32api.ShellExecute(0,"print", os.path.join(pdf_dir,f), None,  ".",  0)
-#                 print getActualTime()+" COPY "+f+" to ARCHIVE!"
-#                 shutil.copy(os.path.join(pdf_dir,f),os.path.join(archive_dir,f))
-#                 deleteFile(f)
-#                 print getActualTime()+" FILE "+f+" SUCCESSFULLY PRINTED!"
-#             except Exception as e:
-#                 print e
-#                 shutil.copy(os.path.join(pdf_dir,f),os.path.join(problem,f))
-#                 deleteFile(f)
