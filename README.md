@@ -16,4 +16,6 @@ Since PDFs are received in random order, and synced using Google Backup and Sync
   - Right-click a document and make sure you see a Print option
   * Hint: make sure your 3rd party app is the default and not some other app like Microsoft Edge if you don't see Print option in context menu
   
- 
+## Compile using Pyinstaller
+
+`pyinstaller PrintFolderAndArchive.py -i printer.ico --onefile --hiddenimport pywintypes
