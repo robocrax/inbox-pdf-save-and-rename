@@ -14,6 +14,6 @@ Since PDFs are received in random order, and synced using Google Backup and Sync
 - Assuming you're a dev (not necessarily Python or Javascript)
 - You have a 3rd party application (like Adobe Reader for PDFs) for print support.
   - Right-click a document and make sure you see a Print option
-  - also make sure your 3rd party app is the default and not some other app like Microsoft Edge
+  * Hint: make sure your 3rd party app is the default and not some other app like Microsoft Edge if you don't see Print option in context menu
   
  
