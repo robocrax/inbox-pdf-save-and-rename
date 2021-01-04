@@ -3,7 +3,7 @@ time
 sys
 shutil
 json
-win32print
+win32printing
 win32api
 datetime
 pywintypes
