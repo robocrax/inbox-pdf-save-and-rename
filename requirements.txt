@@ -6,3 +6,5 @@ json
 win32print
 win32api
 datetime
+pywintypes
+pyinstaller
